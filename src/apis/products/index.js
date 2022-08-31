@@ -8,8 +8,26 @@ const productRouter = express.Router()
 
 productRouter.get("/", async (req, res, next) => {
   try {
-    const products = await Product.findAll()
-
+    const query = {}
+    if (req.query.name) {
+      query.name = {
+        [Op.iLike]: `%${req.query.name}%`,
+      }
+    }
+    if (req.query.price) {
+      query.price = {
+        [Op.between]: req.query.price.split(","),
+      }
+    }
+    if (req.query.category) {
+      query.category = {
+        [Op.iLike]: `%${req.query.category}%`,
+      }
+    }
+    const products = await Product.findAll({
+      attributes: ["name", "category", "price", "description", "image"],
+      where: query,
+    })
     res.send(products)
   } catch (error) {
     console.log(error)
